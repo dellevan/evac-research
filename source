@@ -1,0 +1,793 @@
+//Author: Evan Dell
+//Research Project - Classroom Evacuation Simulation using Cellular Automata Concept
+
+#include<iostream>
+#include<stdlib.h>
+using namespace std;
+
+//declare functions
+void generateFloorValues();
+void generateClassroomGrid();
+void getLowestAdjacent();
+void displayFloorValues();
+void displayCurrentModel();
+void placeOccupants(int);
+
+//declare arrays/variables for model and floor values
+int floorValues[16][16];
+char classroomModel[16][16];
+int gridSize = 16;
+int numOfOccupants;
+
+//declare character key
+char door = 'D';
+char openSpace = '-';
+char occupant = 'O';
+char obstacle = 'X';
+
+//main driver
+int main()
+{
+	//call functions to generate model/values
+	generateFloorValues();
+	generateClassroomGrid();
+
+	//input amount of occupants
+	cout << "How many occupants? Type 15, 20, 25, 30, 35, 40, 45 or 50 and press enter" << endl << endl;
+	cin >> numOfOccupants;
+	int x = numOfOccupants;
+
+	//call function to place occupants
+	placeOccupants(x);
+	cout << "The occupants have been placed successfully" << endl << endl;
+
+	displayFloorValues();
+	//call function to display model in current state
+	displayCurrentModel();
+
+	//begin evacuation of occupants
+
+}
+
+
+//function to generate floor values for all cells in 16x16 grid
+void generateFloorValues()
+{
+	//set wall values to 50
+	for (int i = 0; i < gridSize; i++)
+	{
+		floorValues[0][i] = 50;
+		floorValues[15][i] = 50;
+		floorValues[i][0] = 50;
+		floorValues[i][15] = 50;
+	}
+
+	//set door value to 0
+	floorValues[15][13] = 0;
+
+	//set values for occupiable cells
+	//column [14]
+	int temp = 15;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][14] = temp;
+		temp--;
+	}
+	//column [13]
+	temp = 14;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][13] = temp;
+		temp--;
+	}
+	//column [12]
+	temp = 15;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][12] = temp;
+		temp--;
+	}
+	//column [11]
+	temp = 16;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][11] = temp;
+		temp--;
+	}
+	//column [10]
+	temp = 17;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][10] = temp;
+		temp--;
+	}
+	//column [9]
+	temp = 18;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][9] = temp;
+		temp--;
+	}
+	//column [8]
+	temp = 19;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][8] = temp;
+		temp--;
+	}
+	//column [7]
+	temp = 20;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][7] = temp;
+		temp--;
+	}
+	//column [6]
+	temp = 21;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][6] = temp;
+		temp--;
+	}
+	//column [5]
+	temp = 22;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][5] = temp;
+		temp--;
+	}
+	//column [4]
+	temp = 23;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][4] = temp;
+		temp--;
+	}
+	//column [3]
+	temp = 24;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][3] = temp;
+		temp--;
+	}
+	//column [2]
+	temp = 25;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][2] = temp;
+		temp--;
+	}
+	//column [1]
+	temp = 26;
+	for (int i = 1; i < 15; i++)
+	{
+		floorValues[i][1] = temp;
+		temp--;
+	}
+
+	//set obstacle values to 50
+	for (int i = 3; i < 12; i++)
+	{
+		floorValues[3][i] = 50;
+		floorValues[4][i] = 50;
+		floorValues[7][i] = 50;
+		floorValues[8][i] = 50;
+	}
+
+	for (int i = 3; i < 13; i++)
+	{
+		floorValues[11][i] = 50;
+		floorValues[12][i] = 50;
+	}
+
+	cout << "The floor values have been generated successfully" << endl << endl;
+}
+
+
+//function to generate model for CA simualtion
+void generateClassroomGrid()
+{
+
+	//set wall values to 'X'
+	for (int i = 0; i < gridSize; i++)
+	{
+		classroomModel[0][i] = obstacle;
+		classroomModel[15][i] = obstacle;
+		classroomModel[i][0] = obstacle;
+		classroomModel[i][15] = obstacle;
+	}
+
+	//set door value to 'D'
+	classroomModel[15][13] = door;
+
+	//set values for occupiable cells to '-'
+	//column [14]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][14] = openSpace;
+	}
+	//column [13]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][13] = openSpace;
+	}
+	//column [12]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][12] = openSpace;
+	}
+	//column [11]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][11] = openSpace;
+	}
+	//column [10]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][10] = openSpace;
+	}
+	//column [9]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][9] = openSpace;
+	}
+	//column [8]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][8] = openSpace;
+	}
+	//column [7]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][7] = openSpace;
+	}
+	//column [6]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][6] = openSpace;
+	}
+	//column [5]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][5] = openSpace;
+	}
+	//column [4]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][4] = openSpace;
+	}
+	//column [3]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][3] = openSpace;
+	}
+	//column [2]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][2] = openSpace;
+	}
+	//column [1]
+	for (int i = 1; i < 15; i++)
+	{
+		classroomModel[i][1] = openSpace;
+	}
+
+	//set obstacle values to 'X'
+	for (int i = 3; i < 12; i++)
+	{
+		classroomModel[3][i] = 'X';
+		classroomModel[4][i] = 'X';
+		classroomModel[7][i] = 'X';
+		classroomModel[8][i] = 'X';
+	}
+
+	for (int i = 3; i < 13; i++)
+	{
+		classroomModel[11][i] = 'X';
+		classroomModel[12][i] = 'X';
+	}
+
+	cout << "The classroom model has been generated successfully" << endl << endl;
+}
+
+
+//function to determine target cell
+void placeOccupants(int x)
+{
+
+	if (x == 15)
+	{
+		classroomModel[2][3] = occupant;//1
+		classroomModel[2][7] = occupant;//2
+		classroomModel[2][11] = occupant;//3
+		classroomModel[5][3] = occupant;//4
+		classroomModel[5][7] = occupant;//5
+		classroomModel[5][11] = occupant;//6
+		classroomModel[6][3] = occupant;//7
+		classroomModel[6][11] = occupant;//8
+		classroomModel[9][7] = occupant;//9
+		classroomModel[10][3] = occupant;//10
+		classroomModel[10][7] = occupant;//11
+		classroomModel[10][11] = occupant;//12
+		classroomModel[13][3] = occupant;//13
+		classroomModel[13][7] = occupant;//14
+		classroomModel[13][11] = occupant;//15
+	}
+	else if(x == 20)
+	{
+		classroomModel[2][3] = occupant;//1
+		classroomModel[2][7] = occupant;//2
+		classroomModel[2][11] = occupant;//3
+		classroomModel[5][3] = occupant;//4
+		classroomModel[5][7] = occupant;//5
+		classroomModel[5][11] = occupant;//6
+		classroomModel[6][3] = occupant;//7
+		classroomModel[6][11] = occupant;//8
+		classroomModel[9][7] = occupant;//9
+		classroomModel[10][3] = occupant;//10
+		classroomModel[10][7] = occupant;//11
+		classroomModel[10][11] = occupant;//12
+		classroomModel[13][3] = occupant;//13
+		classroomModel[13][7] = occupant;//14
+		classroomModel[13][11] = occupant;//15
+		classroomModel[2][5] = occupant;//16
+		classroomModel[2][9] = occupant;//17
+		classroomModel[6][7] = occupant;//18
+		classroomModel[13][5] = occupant;//19
+		classroomModel[13][9] = occupant;//20
+	}
+	else if (x == 25)
+	{
+		classroomModel[2][3] = occupant;//1
+		classroomModel[2][7] = occupant;//2
+		classroomModel[2][11] = occupant;//3
+		classroomModel[5][3] = occupant;//4
+		classroomModel[5][7] = occupant;//5
+		classroomModel[5][11] = occupant;//6
+		classroomModel[6][3] = occupant;//7
+		classroomModel[6][11] = occupant;//8
+		classroomModel[9][7] = occupant;//9
+		classroomModel[10][3] = occupant;//10
+		classroomModel[10][7] = occupant;//11
+		classroomModel[10][11] = occupant;//12
+		classroomModel[13][3] = occupant;//13
+		classroomModel[13][7] = occupant;//14
+		classroomModel[13][11] = occupant;//15
+		classroomModel[2][5] = occupant;//16
+		classroomModel[2][9] = occupant;//17
+		classroomModel[6][7] = occupant;//18
+		classroomModel[13][5] = occupant;//19
+		classroomModel[13][9] = occupant;//20
+		classroomModel[9][3] = occupant;//21
+		classroomModel[9][11] = occupant;//22
+		classroomModel[4][2] = occupant;//23
+		classroomModel[8][2] = occupant;//24
+		classroomModel[12][2] = occupant;//25
+	}
+	else if (x == 30)
+	{
+		classroomModel[2][3] = occupant;//1
+		classroomModel[2][7] = occupant;//2
+		classroomModel[2][11] = occupant;//3
+		classroomModel[5][3] = occupant;//4
+		classroomModel[5][7] = occupant;//5
+		classroomModel[5][11] = occupant;//6
+		classroomModel[6][3] = occupant;//7
+		classroomModel[6][11] = occupant;//8
+		classroomModel[9][7] = occupant;//9
+		classroomModel[10][3] = occupant;//10
+		classroomModel[10][7] = occupant;//11
+		classroomModel[10][11] = occupant;//12
+		classroomModel[13][3] = occupant;//13
+		classroomModel[13][7] = occupant;//14
+		classroomModel[13][11] = occupant;//15
+		classroomModel[2][5] = occupant;//16
+		classroomModel[2][9] = occupant;//17
+		classroomModel[6][7] = occupant;//18
+		classroomModel[13][5] = occupant;//19
+		classroomModel[13][9] = occupant;//20
+		classroomModel[9][3] = occupant;//21
+		classroomModel[9][11] = occupant;//22
+		classroomModel[4][2] = occupant;//23
+		classroomModel[8][2] = occupant;//24
+		classroomModel[12][2] = occupant;//25
+		classroomModel[5][5] = occupant;//26
+		classroomModel[5][9] = occupant;//27
+		classroomModel[10][5] = occupant;//28
+		classroomModel[10][9] = occupant;//29
+		classroomModel[6][5] = occupant;//30
+	}
+	else if (x == 35)
+	{
+		classroomModel[2][3] = occupant;//1
+		classroomModel[2][7] = occupant;//2
+		classroomModel[2][11] = occupant;//3
+		classroomModel[5][3] = occupant;//4
+		classroomModel[5][7] = occupant;//5
+		classroomModel[5][11] = occupant;//6
+		classroomModel[6][3] = occupant;//7
+		classroomModel[6][11] = occupant;//8
+		classroomModel[9][7] = occupant;//9
+		classroomModel[10][3] = occupant;//10
+		classroomModel[10][7] = occupant;//11
+		classroomModel[10][11] = occupant;//12
+		classroomModel[13][3] = occupant;//13
+		classroomModel[13][7] = occupant;//14
+		classroomModel[13][11] = occupant;//15
+		classroomModel[2][5] = occupant;//16
+		classroomModel[2][9] = occupant;//17
+		classroomModel[6][7] = occupant;//18
+		classroomModel[13][5] = occupant;//19
+		classroomModel[13][9] = occupant;//20
+		classroomModel[9][3] = occupant;//21
+		classroomModel[9][11] = occupant;//22
+		classroomModel[4][2] = occupant;//23
+		classroomModel[8][2] = occupant;//24
+		classroomModel[12][2] = occupant;//25
+		classroomModel[5][5] = occupant;//26
+		classroomModel[5][9] = occupant;//27
+		classroomModel[10][5] = occupant;//28
+		classroomModel[10][9] = occupant;//29
+		classroomModel[6][5] = occupant;//30
+		classroomModel[9][5] = occupant;//31
+		classroomModel[9][9] = occupant;//32
+		classroomModel[3][2] = occupant;//33
+		classroomModel[7][2] = occupant;//34
+		classroomModel[11][2] = occupant;//35
+	}
+	else if (x == 40)
+	{
+		classroomModel[2][3] = occupant;//1
+		classroomModel[2][7] = occupant;//2
+		classroomModel[2][11] = occupant;//3
+		classroomModel[5][3] = occupant;//4
+		classroomModel[5][7] = occupant;//5
+		classroomModel[5][11] = occupant;//6
+		classroomModel[6][3] = occupant;//7
+		classroomModel[6][11] = occupant;//8
+		classroomModel[9][7] = occupant;//9
+		classroomModel[10][3] = occupant;//10
+		classroomModel[10][7] = occupant;//11
+		classroomModel[10][11] = occupant;//12
+		classroomModel[13][3] = occupant;//13
+		classroomModel[13][7] = occupant;//14
+		classroomModel[13][11] = occupant;//15
+		classroomModel[2][5] = occupant;//16
+		classroomModel[2][9] = occupant;//17
+		classroomModel[6][7] = occupant;//18
+		classroomModel[13][5] = occupant;//19
+		classroomModel[13][9] = occupant;//20
+		classroomModel[9][3] = occupant;//21
+		classroomModel[9][11] = occupant;//22
+		classroomModel[4][2] = occupant;//23
+		classroomModel[8][2] = occupant;//24
+		classroomModel[12][2] = occupant;//25
+		classroomModel[5][5] = occupant;//26
+		classroomModel[5][9] = occupant;//27
+		classroomModel[10][5] = occupant;//28
+		classroomModel[10][9] = occupant;//29
+		classroomModel[6][5] = occupant;//30
+		classroomModel[9][5] = occupant;//31
+		classroomModel[9][9] = occupant;//32
+		classroomModel[3][2] = occupant;//33
+		classroomModel[7][2] = occupant;//34
+		classroomModel[11][2] = occupant;//35
+		classroomModel[6][9] = occupant;//36
+		classroomModel[3][12] = occupant;//37
+		classroomModel[7][12] = occupant;//38
+		classroomModel[11][13] = occupant;//39
+		classroomModel[4][12] = occupant;//40
+	}
+	else if (x == 45)
+	{
+		classroomModel[2][3] = occupant;//1
+		classroomModel[2][7] = occupant;//2
+		classroomModel[2][11] = occupant;//3
+		classroomModel[5][3] = occupant;//4
+		classroomModel[5][7] = occupant;//5
+		classroomModel[5][11] = occupant;//6
+		classroomModel[6][3] = occupant;//7
+		classroomModel[6][11] = occupant;//8
+		classroomModel[9][7] = occupant;//9
+		classroomModel[10][3] = occupant;//10
+		classroomModel[10][7] = occupant;//11
+		classroomModel[10][11] = occupant;//12
+		classroomModel[13][3] = occupant;//13
+		classroomModel[13][7] = occupant;//14
+		classroomModel[13][11] = occupant;//15
+		classroomModel[2][5] = occupant;//16
+		classroomModel[2][9] = occupant;//17
+		classroomModel[6][7] = occupant;//18
+		classroomModel[13][5] = occupant;//19
+		classroomModel[13][9] = occupant;//20
+		classroomModel[9][3] = occupant;//21
+		classroomModel[9][11] = occupant;//22
+		classroomModel[4][2] = occupant;//23
+		classroomModel[8][2] = occupant;//24
+		classroomModel[12][2] = occupant;//25
+		classroomModel[5][5] = occupant;//26
+		classroomModel[5][9] = occupant;//27
+		classroomModel[10][5] = occupant;//28
+		classroomModel[10][9] = occupant;//29
+		classroomModel[6][5] = occupant;//30
+		classroomModel[9][5] = occupant;//31
+		classroomModel[9][9] = occupant;//32
+		classroomModel[3][2] = occupant;//33
+		classroomModel[7][2] = occupant;//34
+		classroomModel[11][2] = occupant;//35
+		classroomModel[6][9] = occupant;//36
+		classroomModel[3][12] = occupant;//37
+		classroomModel[7][12] = occupant;//38
+		classroomModel[11][13] = occupant;//39
+		classroomModel[4][12] = occupant;//40
+		classroomModel[13][4] = occupant;//41
+		classroomModel[10][4] = occupant;//42
+		classroomModel[6][4] = occupant;//43
+		classroomModel[2][4] = occupant;//44
+		classroomModel[9][8] = occupant;//45
+	}
+	else if (x == 50)
+	{
+		classroomModel[2][3] = occupant;//1
+		classroomModel[2][7] = occupant;//2
+		classroomModel[2][11] = occupant;//3
+		classroomModel[5][3] = occupant;//4
+		classroomModel[5][7] = occupant;//5
+		classroomModel[5][11] = occupant;//6
+		classroomModel[6][3] = occupant;//7
+		classroomModel[6][11] = occupant;//8
+		classroomModel[9][7] = occupant;//9
+		classroomModel[10][3] = occupant;//10
+		classroomModel[10][7] = occupant;//11
+		classroomModel[10][11] = occupant;//12
+		classroomModel[13][3] = occupant;//13
+		classroomModel[13][7] = occupant;//14
+		classroomModel[13][11] = occupant;//15
+		classroomModel[2][5] = occupant;//16
+		classroomModel[2][9] = occupant;//17
+		classroomModel[6][7] = occupant;//18
+		classroomModel[13][5] = occupant;//19
+		classroomModel[13][9] = occupant;//20
+		classroomModel[9][3] = occupant;//21
+		classroomModel[9][11] = occupant;//22
+		classroomModel[4][2] = occupant;//23
+		classroomModel[8][2] = occupant;//24
+		classroomModel[12][2] = occupant;//25
+		classroomModel[5][5] = occupant;//26
+		classroomModel[5][9] = occupant;//27
+		classroomModel[10][5] = occupant;//28
+		classroomModel[10][9] = occupant;//29
+		classroomModel[6][5] = occupant;//30
+		classroomModel[9][5] = occupant;//31
+		classroomModel[9][9] = occupant;//32
+		classroomModel[3][2] = occupant;//33
+		classroomModel[7][2] = occupant;//34
+		classroomModel[11][2] = occupant;//35
+		classroomModel[6][9] = occupant;//36
+		classroomModel[3][12] = occupant;//37
+		classroomModel[7][12] = occupant;//38
+		classroomModel[11][13] = occupant;//39
+		classroomModel[4][12] = occupant;//40
+		classroomModel[13][4] = occupant;//41
+		classroomModel[10][4] = occupant;//42
+		classroomModel[6][4] = occupant;//43
+		classroomModel[2][4] = occupant;//44
+		classroomModel[9][8] = occupant;//45
+		classroomModel[5][6] = occupant;//46
+		classroomModel[5][10] = occupant;//47
+		classroomModel[8][12] = occupant;//48
+		classroomModel[10][10] = occupant;//49
+		classroomModel[13][10] = occupant;//50
+	}
+	else
+	{
+		cout << "Error: Invalid Entry" << endl;
+	}
+}
+
+
+//function to display the current values of each position
+void displayFloorValues()
+{
+	cout << "The current floor values:" << endl;
+	for (int i = 0; i < gridSize; i++)//print row [0]
+	{
+		cout << floorValues[0][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [1]
+	{
+		cout << floorValues[1][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [2]
+	{
+		cout << floorValues[2][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [3]
+	{
+		cout << floorValues[3][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [4]
+	{
+		cout << floorValues[4][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [5]
+	{
+		cout << floorValues[5][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [6]
+	{
+		cout << floorValues[6][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [7]
+	{
+		cout << floorValues[7][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [8]
+	{
+		cout << floorValues[8][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [9]
+	{
+		cout << floorValues[9][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [10]
+	{
+		cout << floorValues[10][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [11]
+	{
+		cout << floorValues[11][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [12]
+	{
+		cout << floorValues[12][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [13]
+	{
+		cout << floorValues[13][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [14]
+	{
+		cout << floorValues[14][i] << "  ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [15]
+	{
+		cout << floorValues[15][i] << "  ";
+	}
+	cout << endl;
+	system("pause");
+}
+
+
+//function to display current position of occupants
+void displayCurrentModel()
+{
+	cout << "Key:" << endl << "Door = 'D', Open Space = '-'," << endl;
+	cout << "Walls/Obstacles = 'X', Occupants = 'O'" << endl << endl;
+	for (int i = 0; i < gridSize; i++)//print row [0]
+	{
+		cout << classroomModel[0][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [1]
+	{
+		cout << classroomModel[1][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [2]
+	{
+		cout << classroomModel[2][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [3]
+	{
+		cout << classroomModel[3][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [4]
+	{
+		cout << classroomModel[4][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [5]
+	{
+		cout << classroomModel[5][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [6]
+	{
+		cout << classroomModel[6][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [7]
+	{
+		cout << classroomModel[7][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [8]
+	{
+		cout << classroomModel[8][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [9]
+	{
+		cout << classroomModel[9][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [10]
+	{
+		cout << classroomModel[10][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [11]
+	{
+		cout << classroomModel[11][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [12]
+	{
+		cout << classroomModel[12][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [13]
+	{
+		cout << classroomModel[13][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [14]
+	{
+		cout << classroomModel[14][i] << " ";
+	}
+	cout << endl;
+
+	for (int i = 0; i < gridSize; i++)//print row [15]
+	{
+		cout << classroomModel[15][i] << " ";
+	}
+	cout << endl;
+	system("pause");
+}
